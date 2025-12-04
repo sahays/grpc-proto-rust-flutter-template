@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package auth;
+
+option java_multiple_files = true;
+option java_package = "com.saas.auth.grpc";
+option java_outer_classname = "AuthProto";
+
+service AuthService {
+  rpc SignUp (SignUpRequest) returns (SignUpResponse);
+  rpc Login (LoginRequest) returns (LoginResponse);
+  rpc ForgotPassword (ForgotPasswordRequest) returns (ForgotPasswordResponse);
+  rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordResponse);
+  rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+  // Add other user profile fields as needed
+}
+
+message SignUpRequest {
+  string email = 1;
+  string password = 2;
+  string first_name = 3;
+  string last_name = 4;
+}
+
+message SignUpResponse {
+  bool success = 1;
+  string message = 2;
+  User user = 3; // Optionally return the created user
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string access_token = 1;
+  string refresh_token = 2; // For long-lived sessions
+  int64 expires_in = 3; // Access token expiry in seconds
+  User user = 4;
+}
+
+message ForgotPasswordRequest {
+  string email = 1;
+}
+
+message ForgotPasswordResponse {
+  bool success = 1;
+  string message = 2; // e.g., "Password reset link sent to your email."
+}
+
+message ResetPasswordRequest {
+  string token = 1; // The token received via email
+  string new_password = 2;
+}
+
+message ResetPasswordResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ValidateTokenRequest {
+  string access_token = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  User user = 2; // The user associated with the token
+  string message = 3;
+}
