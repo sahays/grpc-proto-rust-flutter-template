@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package auth;
 
+option go_package = "github.com/sahays/grpc-proto-go-flutter-template/proto/auth";
 option java_multiple_files = true;
 option java_package = "com.saas.auth.grpc";
 option java_outer_classname = "AuthProto";
