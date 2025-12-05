@@ -54,14 +54,14 @@
 
 **Goal:** Robust data persistence with schema versioning.
 
-- [ ] **Task 2.1:** Create database connection pool using lib/pq with context-aware queries.
-- [ ] **Task 2.2:** Setup **golang-migrate** for database migrations (Initial schema: `users` table with UUID, email,
+- [x] **Task 2.1:** Create database connection pool using lib/pq with context-aware queries.
+- [x] **Task 2.2:** Setup **golang-migrate** for database migrations (Initial schema: `users` table with UUID, email,
       password_hash, first_name, last_name, created_at, updated_at).
-- [ ] **Task 2.3:** Create migration files: `001_create_users_table.up.sql` and `001_create_users_table.down.sql`.
-- [ ] **Task 2.4:** Implement Redis client wrapper with context support for token storage and caching.
-- [ ] **Task 2.5:** Create `models/user.go` with User struct and database methods.
-- [ ] **Task 2.6:** Implement `db/postgres.go` with connection management, health checks, and graceful shutdown.
-- [ ] **Task 2.7:** Implement `cache/redis.go` with token operations (Set, Get, Delete with TTL).
+- [x] **Task 2.3:** Create migration files: `001_create_users_table.up.sql` and `001_create_users_table.down.sql`.
+- [x] **Task 2.4:** Implement Redis client wrapper with context support for token storage and caching.
+- [x] **Task 2.5:** Create `models/user.go` with User struct and database methods.
+- [x] **Task 2.6:** Implement `db/postgres.go` with connection management, health checks, and graceful shutdown.
+- [x] **Task 2.7:** Implement `cache/redis.go` with token operations (Set, Get, Delete with TTL).
 
 ### Epic 3: Backend Authentication Core
 
