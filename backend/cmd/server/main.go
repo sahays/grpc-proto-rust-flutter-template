@@ -11,9 +11,16 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/sahays/grpc-proto-go-flutter-template/internal/auth"
 	"github.com/sahays/grpc-proto-go-flutter-template/internal/cache"
 	"github.com/sahays/grpc-proto-go-flutter-template/internal/config"
 	"github.com/sahays/grpc-proto-go-flutter-template/internal/db"
+	"github.com/sahays/grpc-proto-go-flutter-template/internal/middleware"
+	"github.com/sahays/grpc-proto-go-flutter-template/internal/models"
+	"github.com/sahays/grpc-proto-go-flutter-template/pkg/jwt"
+	"github.com/sahays/grpc-proto-go-flutter-template/pkg/logger"
+	"github.com/sahays/grpc-proto-go-flutter-template/pkg/password"
+	pb "github.com/sahays/grpc-proto-go-flutter-template/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -67,13 +74,40 @@ func main() {
 	log.Printf("Database pool: OpenConnections=%d, InUse=%d, Idle=%d",
 		stats.OpenConnections, stats.InUse, stats.Idle)
 
-	// Create gRPC server
-	grpcServer := grpc.NewServer()
+	// Initialize logger
+	zapLogger, err := logger.New(cfg)
+	if err != nil {
+		log.Fatalf("Failed to initialize logger: %v", err)
+	}
+	defer zapLogger.Sync()
 
-	// TODO: Register services here (Epic 3)
-	// userRepo := models.NewUserRepository(database.DB)
-	// authService := auth.NewAuthService(cfg, userRepo, redisCache)
-	// pb.RegisterAuthServiceServer(grpcServer, authService)
+	// Initialize JWT service
+	jwtService, err := jwt.New(cfg)
+	if err != nil {
+		log.Fatalf("Failed to initialize JWT service: %v", err)
+	}
+	zapLogger.Info("JWT service initialized")
+
+	// Initialize password service
+	passService := password.New(cfg)
+
+	// Initialize repositories
+	userRepo := models.NewUserRepository(database.DB)
+
+	// Initialize auth service
+	authService := auth.NewService(cfg, userRepo, redisCache, jwtService, passService)
+	zapLogger.Info("Auth service initialized")
+
+	// Create gRPC server with interceptors
+	grpcServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			middleware.LoggingInterceptor(zapLogger),
+		),
+	)
+
+	// Register services
+	pb.RegisterAuthServiceServer(grpcServer, authService)
+	zapLogger.Info("AuthService registered")
 
 	// Enable reflection for grpcurl
 	reflection.Register(grpcServer)

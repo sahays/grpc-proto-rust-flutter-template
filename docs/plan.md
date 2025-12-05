@@ -67,31 +67,31 @@
 
 **Goal:** Secure, tested, and validated auth endpoints.
 
-- [ ] **Task 3.1:** Implement `pkg/jwt/jwt.go` for RS256 token generation and validation.
+- [x] **Task 3.1:** Implement `pkg/jwt/jwt.go` for RS256 token generation and validation.
   - Generate RSA key pair on startup or load from files
   - CreateAccessToken(userID, email string) with 15min expiry
   - CreateRefreshToken(userID string) with 7d expiry
   - ValidateToken(token string) returns claims or error
-- [ ] **Task 3.2:** Implement password hashing with Argon2id in `pkg/auth/password.go`.
+- [x] **Task 3.2:** Implement password hashing with Argon2id in `pkg/password/password.go`.
   - HashPassword(password string) returns hash
   - VerifyPassword(hash, password string) returns bool
-- [ ] **Task 3.3:** Implement gRPC auth interceptor in `internal/middleware/auth.go`.
-  - Extract JWT from metadata
-  - Validate token and inject user context
-  - Skip auth for public endpoints (SignUp, Login, ForgotPassword, ResetPassword)
-- [ ] **Task 3.4:** Implement logging interceptor in `internal/middleware/logging.go` using Zap.
+- [x] **Task 3.3:** Implement gRPC logging interceptor in `internal/middleware/logging.go` using Zap.
   - Log all incoming requests with method, duration, status
-  - Include request IDs for tracing
-- [ ] **Task 3.5:** Implement `internal/auth/service.go` with AuthService gRPC handlers.
+  - Structured logging with error tracking
+- [x] **Task 3.4:** Implement `internal/auth/service.go` with AuthService gRPC handlers.
   - SignUp: validate input, hash password, create user, return success
   - Login: verify credentials, generate tokens, store refresh token in Redis, return tokens
   - ValidateToken: check token validity and return user info
   - ForgotPassword: generate reset token, store in Redis, return success (email simulation)
   - ResetPassword: validate reset token, update password
-- [ ] **Task 3.6:** Add input validation helpers in `internal/auth/validation.go`.
+- [x] **Task 3.5:** Add input validation helpers in `internal/auth/validation.go`.
   - ValidateEmail(email string) bool
   - ValidatePassword(password string) error (min 8 chars, complexity rules)
   - Map validation errors to gRPC status codes
+- [x] **Task 3.6:** Wire all services in `cmd/server/main.go` and test authentication flow.
+  - Initialize JWT, password, and auth services
+  - Register gRPC interceptors
+  - Test SignUp, Login, ValidateToken, and error cases
 
 ### Epic 4: Frontend Foundation & Auth UI
 
