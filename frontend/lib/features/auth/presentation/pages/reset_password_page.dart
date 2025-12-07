@@ -5,47 +5,47 @@ import 'package:flutter_web_app/core/di/injection.dart';
 import 'package:flutter_web_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:flutter_web_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:flutter_web_app/features/auth/presentation/bloc/auth_state.dart';
-import 'package:flutter_web_app/features/auth/presentation/widgets/email_input.dart';
 import 'package:flutter_web_app/features/auth/presentation/widgets/password_input.dart';
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+class ResetPasswordPage extends StatelessWidget {
+  final String token;
+
+  const ResetPasswordPage({
+    super.key,
+    required this.token,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => getIt<AuthBloc>(),
-      child: const _LoginView(),
+      child: _ResetPasswordView(token: token),
     );
   }
 }
 
-class _LoginView extends StatefulWidget {
-  const _LoginView();
+class _ResetPasswordView extends StatefulWidget {
+  final String token;
+
+  const _ResetPasswordView({required this.token});
 
   @override
-  State<_LoginView> createState() => _LoginViewState();
+  State<_ResetPasswordView> createState() => _ResetPasswordViewState();
 }
 
-class _LoginViewState extends State<_LoginView> {
+class _ResetPasswordViewState extends State<_ResetPasswordView> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
-  Email _email = const Email.pure();
   Password _password = const Password.pure();
+  String _confirmPassword = '';
 
   @override
   void dispose() {
-    _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
-  }
-
-  void _onEmailChanged(String value) {
-    setState(() {
-      _email = Email.dirty(value);
-    });
   }
 
   void _onPasswordChanged(String value) {
@@ -54,12 +54,28 @@ class _LoginViewState extends State<_LoginView> {
     });
   }
 
+  void _onConfirmPasswordChanged(String value) {
+    setState(() {
+      _confirmPassword = value;
+    });
+  }
+
+  String? _validateConfirmPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please confirm your password';
+    }
+    if (value != _passwordController.text) {
+      return 'Passwords do not match';
+    }
+    return null;
+  }
+
   void _onSubmit() {
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(
-            AuthLoginRequested(
-              email: _emailController.text,
-              password: _passwordController.text,
+            AuthResetPasswordRequested(
+              token: widget.token,
+              newPassword: _passwordController.text,
             ),
           );
     }
@@ -70,11 +86,13 @@ class _LoginViewState extends State<_LoginView> {
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthAuthenticated) {
+          if (state is AuthResetPasswordSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Welcome ${state.user.fullName}!')),
+              const SnackBar(
+                content: Text('Password reset successfully! Please login with your new password.'),
+              ),
             );
-            // TODO: Navigate to dashboard
+            context.go('/login');
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -98,43 +116,36 @@ class _LoginViewState extends State<_LoginView> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        'Sign In',
+                        'Reset Password',
                         style: Theme.of(context).textTheme.headlineMedium,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 32),
                       TextFormField(
-                        controller: _emailController,
-                        decoration: const InputDecoration(
-                          labelText: 'Email',
-                          prefixIcon: Icon(Icons.email),
-                        ),
-                        keyboardType: TextInputType.emailAddress,
-                        onChanged: _onEmailChanged,
-                        validator: (_) => _email.isNotValid
-                            ? 'Please enter a valid email'
-                            : null,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
                         controller: _passwordController,
-                        decoration: const InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: Icon(Icons.lock),
+                        decoration: InputDecoration(
+                          labelText: 'New Password',
+                          prefixIcon: const Icon(Icons.lock),
+                          helperText: _password.errorMessage,
+                          helperMaxLines: 2,
                         ),
                         obscureText: true,
                         onChanged: _onPasswordChanged,
                         validator: (_) =>
-                            _password.isNotValid ? 'Password is required' : null,
+                            _password.isNotValid ? _password.errorMessage : null,
                       ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () => context.go('/forgot-password'),
-                          child: const Text('Forgot Password?'),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        decoration: const InputDecoration(
+                          labelText: 'Confirm Password',
+                          prefixIcon: Icon(Icons.lock_outline),
                         ),
+                        obscureText: true,
+                        onChanged: _onConfirmPasswordChanged,
+                        validator: _validateConfirmPassword,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 24),
                       BlocBuilder<AuthBloc, AuthState>(
                         builder: (context, state) {
                           return FilledButton(
@@ -147,14 +158,14 @@ class _LoginViewState extends State<_LoginView> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text('Sign In'),
+                                : const Text('Reset Password'),
                           );
                         },
                       ),
                       const SizedBox(height: 16),
                       TextButton(
-                        onPressed: () => context.go('/register'),
-                        child: const Text('Don\'t have an account? Sign Up'),
+                        onPressed: () => context.go('/login'),
+                        child: const Text('Back to Login'),
                       ),
                     ],
                   ),

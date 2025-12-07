@@ -56,3 +56,16 @@ class AuthSignUpSuccess extends AuthState {
 class AuthSessionExpired extends AuthState {
   const AuthSessionExpired();
 }
+
+class AuthForgotPasswordSuccess extends AuthState {
+  final String message;
+
+  const AuthForgotPasswordSuccess(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class AuthResetPasswordSuccess extends AuthState {
+  const AuthResetPasswordSuccess();
+}

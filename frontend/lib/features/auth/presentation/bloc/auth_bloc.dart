@@ -13,6 +13,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSignUpRequested>(_onSignUpRequested);
     on<AuthLogoutRequested>(_onLogoutRequested);
     on<AuthTokenValidationRequested>(_onTokenValidationRequested);
+    on<AuthForgotPasswordRequested>(_onForgotPasswordRequested);
+    on<AuthResetPasswordRequested>(_onResetPasswordRequested);
   }
 
   Future<void> _onLoginRequested(
@@ -82,6 +84,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } else {
         emit(const AuthSessionExpired());
       }
+    } catch (e) {
+      emit(AuthError(e.toString()));
+    }
+  }
+
+  Future<void> _onForgotPasswordRequested(
+    AuthForgotPasswordRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+
+    try {
+      final message = await _authRepository.forgotPassword(event.email);
+      emit(AuthForgotPasswordSuccess(message));
+    } catch (e) {
+      emit(AuthError(e.toString()));
+    }
+  }
+
+  Future<void> _onResetPasswordRequested(
+    AuthResetPasswordRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+
+    try {
+      await _authRepository.resetPassword(event.token, event.newPassword);
+      emit(const AuthResetPasswordSuccess());
     } catch (e) {
       emit(AuthError(e.toString()));
     }

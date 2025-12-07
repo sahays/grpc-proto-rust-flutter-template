@@ -67,4 +67,15 @@ class AuthRepositoryImpl implements AuthRepository {
       lastName: response.user.lastName,
     );
   }
+
+  @override
+  Future<String> forgotPassword(String email) async {
+    final response = await _remoteDataSource.forgotPassword(email);
+    return response.message;
+  }
+
+  @override
+  Future<void> resetPassword(String token, String newPassword) async {
+    await _remoteDataSource.resetPassword(token, newPassword);
+  }
 }

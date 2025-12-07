@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -214,6 +215,12 @@ func (s *Service) ForgotPassword(ctx context.Context, req *pb.ForgotPasswordRequ
 
 	// TODO: Send email with reset link
 	// In production, send email: https://yourapp.com/reset-password?token=resetToken
+	// For development, log the token
+	log.Printf("=== PASSWORD RESET TOKEN ===")
+	log.Printf("Email: %s", user.Email)
+	log.Printf("Token: %s", resetToken)
+	log.Printf("This token expires in 1 hour")
+	log.Printf("=============================")
 
 	return &pb.ForgotPasswordResponse{
 		Success: true,

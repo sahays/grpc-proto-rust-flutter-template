@@ -106,14 +106,145 @@
 - [x] **Task 4.4:** **Forms:** Create `LoginForm` and `RegisterForm` using `formz` (Strict validation logic shared with
       UI).
 - [x] **Task 4.5:** **UI:** Responsive Login/Signup screens (Mobile-first, Dark/Light mode support).
+- [x] **Task 4.6:** **Forgot Password Flow:** Implement forgot password with reset token (logged instead of emailed).
+- [ ] **Task 4.7:** **Enhanced Auth UI:** Modern redesign inspired by Figma samples (login-figma-inspire.jpg)
 
-### Epic 5: The Dashboard (SaaS Shell)
+  **Layout Patterns:**
+  - Split-screen design: Hero image/illustration left (60%), form right (40%) for desktop
+  - Centered card layout with backdrop blur for mobile
+  - Full-screen gradient backgrounds with overlay patterns
+  - Asymmetric layouts with diagonal cuts and geometric shapes
 
-**Goal:** The main application layout.
+  **Visual Design Elements:**
+  - Gradient backgrounds (pastel, vibrant, or dark mode adaptive)
+  - Glassmorphism cards with blur and transparency
+  - Soft shadows and elevation for depth
+  - Rounded corners (16-24px radius) for modern feel
+  - Hero illustrations or abstract 3D graphics
+  - Brand logo prominently displayed (top-left or centered)
+  - Subtle pattern overlays (dots, lines, geometric shapes)
 
-- [ ] **Task 5.1:** **Layout:** `DashboardScaffold` with adaptive navigation (Drawer on Mobile, Sidebar on Desktop).
-- [ ] **Task 5.2:** **Theming:** High-quality color palette and typography (Google Fonts).
-- [ ] **Task 5.3:** **Feature:** Fetch and display User Profile via gRPC.
+  **Form Components:**
+  - Floating/animated labels that move on focus
+  - Outlined input fields with subtle hover/focus states
+  - Input field icons (email, lock, user icons) with proper spacing
+  - Password visibility toggle with smooth icon transition
+  - Password strength indicator (colored bar below password field)
+  - Social login buttons with brand colors (Google, Apple, GitHub, Facebook)
+  - Primary CTA button with gradient or solid color + hover scale effect
+  - "Remember me" checkbox with custom styling
+  - Divider with "OR" text between social and email login
+
+  **Micro-interactions & Animations:**
+  - Smooth page transitions (slide, fade, scale)
+  - Button hover: subtle scale up (1.02-1.05) + shadow increase
+  - Button press: scale down (0.98) for tactile feedback
+  - Input focus: border color change + glow effect
+  - Loading spinner or skeleton loaders during async operations
+  - Success checkmark animation on successful login
+  - Shake animation for validation errors
+  - Floating animation for decorative elements
+
+  **Typography & Content:**
+  - Large, bold heading (32-48px) for "Welcome back" / "Create account"
+  - Descriptive subheading explaining the purpose
+  - Helper text below inputs for validation feedback
+  - Links styled as text buttons (underline on hover)
+  - "Don't have an account? Sign up" with emphasized link
+  - Footer with Terms of Service and Privacy Policy links
+
+  **Mobile Optimization:**
+  - Stack layout (hero image at top, form below)
+  - Larger touch targets (minimum 44x44px)
+  - Bottom sheet modals for additional options
+  - Safe area padding for notched devices
+  - Optimized keyboard handling (auto-scroll to focused input)
+
+  **Accessibility:**
+  - Semantic HTML/Flutter widgets
+  - Proper contrast ratios (WCAG AA compliant)
+  - Focus indicators for keyboard navigation
+  - Screen reader labels for all interactive elements
+  - Error announcements for form validation
+
+  **Specific Features:**
+  - QR code login option (for mobile app pairing)
+  - "Continue with email" vs social login priority
+  - Progress indicator for multi-step signup
+  - Email verification reminder
+  - Biometric login option (fingerprint icon)
+
+### Epic 5: Sports Academy Admin Panel
+
+**Goal:** A fully responsive, modern admin dashboard for a sports academy with mock data.
+
+#### Task 5.1: Core Dashboard Infrastructure
+- [ ] **Task 5.1.1:** Create `DashboardScaffold` with collapsible sidebar (Desktop) and drawer (Mobile)
+- [ ] **Task 5.1.2:** Implement animated sidebar with expand/collapse functionality
+- [ ] **Task 5.1.3:** Create top AppBar with:
+  - Theme toggle (dark/light mode) with smooth transition
+  - User profile dropdown with avatar
+  - Notification bell with badge
+  - Search bar with autocomplete
+- [ ] **Task 5.1.4:** Add gradient backgrounds (adaptive to dark/light theme)
+- [ ] **Task 5.1.5:** Implement navigation menu with icons and nested submenus
+- [ ] **Task 5.1.6:** Add animated hover effects and click ripple animations
+- [ ] **Task 5.1.7:** Create custom color schemes for dark and light modes
+- [ ] **Task 5.1.8:** Add theme persistence (save user preference)
+
+#### Task 5.2: Mock Data Layer & Models
+- [ ] **Task 5.2.1:** Create domain models (Student, Coach, Class, Attendance, Payment)
+- [ ] **Task 5.2.2:** Implement mock data service for sports academy entities
+- [ ] **Task 5.2.3:** Create mock API client with simulated delays
+
+#### Task 5.3: Dashboard Pages & Features
+- [ ] **Task 5.3.1:** **Overview Dashboard:**
+  - Stats cards with animations (total students, revenue, classes, attendance rate)
+  - Line chart showing enrollment trends (last 6 months)
+  - Bar chart comparing revenue by sport category
+  - Pie chart for student distribution across sports
+  - Recent activity feed with icons
+  - Quick actions panel
+- [ ] **Task 5.3.2:** **Students Management:** List, add, edit, delete students with filtering/search
+  - Student performance charts (individual progress tracking)
+- [ ] **Task 5.3.3:** **Coaches Management:** Coach profiles, specializations, schedules
+  - Coach performance metrics with charts
+- [ ] **Task 5.3.4:** **Classes/Programs:** Class schedules, enrollment, capacity management
+  - Class enrollment trends chart
+  - Capacity utilization charts
+- [ ] **Task 5.3.5:** **Attendance Tracking:** Calendar view, mark attendance, attendance reports
+  - Attendance rate line chart over time
+  - Heatmap calendar showing attendance patterns
+- [ ] **Task 5.3.6:** **Payments & Billing:** Payment history, pending payments, invoices
+  - Revenue charts (monthly, quarterly, yearly)
+  - Payment status pie chart
+- [ ] **Task 5.3.7:** **Reports & Analytics:** Comprehensive analytics dashboard
+  - Multi-metric comparison charts
+  - Trend analysis with area charts
+  - Export to PDF functionality
+- [ ] **Task 5.3.8:** **Settings:** Profile, academy settings, theme preferences (dark/light mode toggle)
+
+#### Task 5.4: UI Components Library
+- [ ] **Task 5.4.1:** Animated stat cards with gradient backgrounds (dark/light mode adaptive)
+- [ ] **Task 5.4.2:** Data tables with sorting, filtering, pagination
+- [ ] **Task 5.4.3:** Chart widgets using fl_chart:
+  - Line charts for attendance trends
+  - Bar charts for revenue/enrollment comparison
+  - Pie charts for student distribution by sport
+  - Area charts for performance metrics
+  - Interactive tooltips and legends
+  - Dark/light mode adaptive color schemes
+- [ ] **Task 5.4.4:** Custom form fields with validation
+- [ ] **Task 5.4.5:** Modal dialogs for add/edit operations
+- [ ] **Task 5.4.6:** Toast notifications and loading indicators
+- [ ] **Task 5.4.7:** Animated buttons with hover and click effects
+- [ ] **Task 5.4.8:** Theme switcher widget for dark/light mode toggle
+
+#### Task 5.5: Responsive Design & Animations
+- [ ] **Task 5.5.1:** Implement responsive breakpoints (mobile, tablet, desktop)
+- [ ] **Task 5.5.2:** Add page transition animations
+- [ ] **Task 5.5.3:** Create loading skeletons for data fetching
+- [ ] **Task 5.5.4:** Implement smooth scrolling and animations
 
 ### Epic 6: Production Security & Reliability
 

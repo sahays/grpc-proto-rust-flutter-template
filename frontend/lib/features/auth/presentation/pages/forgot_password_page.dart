@@ -6,39 +6,35 @@ import 'package:flutter_web_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:flutter_web_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:flutter_web_app/features/auth/presentation/bloc/auth_state.dart';
 import 'package:flutter_web_app/features/auth/presentation/widgets/email_input.dart';
-import 'package:flutter_web_app/features/auth/presentation/widgets/password_input.dart';
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+class ForgotPasswordPage extends StatelessWidget {
+  const ForgotPasswordPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => getIt<AuthBloc>(),
-      child: const _LoginView(),
+      child: const _ForgotPasswordView(),
     );
   }
 }
 
-class _LoginView extends StatefulWidget {
-  const _LoginView();
+class _ForgotPasswordView extends StatefulWidget {
+  const _ForgotPasswordView();
 
   @override
-  State<_LoginView> createState() => _LoginViewState();
+  State<_ForgotPasswordView> createState() => _ForgotPasswordViewState();
 }
 
-class _LoginViewState extends State<_LoginView> {
+class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
 
   Email _email = const Email.pure();
-  Password _password = const Password.pure();
 
   @override
   void dispose() {
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
@@ -48,19 +44,10 @@ class _LoginViewState extends State<_LoginView> {
     });
   }
 
-  void _onPasswordChanged(String value) {
-    setState(() {
-      _password = Password.dirty(value);
-    });
-  }
-
   void _onSubmit() {
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(
-            AuthLoginRequested(
-              email: _emailController.text,
-              password: _passwordController.text,
-            ),
+            AuthForgotPasswordRequested(_emailController.text),
           );
     }
   }
@@ -70,11 +57,15 @@ class _LoginViewState extends State<_LoginView> {
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthAuthenticated) {
+          if (state is AuthForgotPasswordSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Welcome ${state.user.fullName}!')),
+              SnackBar(
+                content: Text(state.message),
+                duration: const Duration(seconds: 5),
+              ),
             );
-            // TODO: Navigate to dashboard
+            // Show dialog with reset token input
+            _showResetTokenDialog(context);
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -98,8 +89,14 @@ class _LoginViewState extends State<_LoginView> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        'Sign In',
+                        'Forgot Password',
                         style: Theme.of(context).textTheme.headlineMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Enter your email address and we\'ll send you a reset token (check the backend logs)',
+                        style: Theme.of(context).textTheme.bodyMedium,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 32),
@@ -115,26 +112,7 @@ class _LoginViewState extends State<_LoginView> {
                             ? 'Please enter a valid email'
                             : null,
                       ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _passwordController,
-                        decoration: const InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: Icon(Icons.lock),
-                        ),
-                        obscureText: true,
-                        onChanged: _onPasswordChanged,
-                        validator: (_) =>
-                            _password.isNotValid ? 'Password is required' : null,
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () => context.go('/forgot-password'),
-                          child: const Text('Forgot Password?'),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 24),
                       BlocBuilder<AuthBloc, AuthState>(
                         builder: (context, state) {
                           return FilledButton(
@@ -147,14 +125,14 @@ class _LoginViewState extends State<_LoginView> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text('Sign In'),
+                                : const Text('Send Reset Token'),
                           );
                         },
                       ),
                       const SizedBox(height: 16),
                       TextButton(
-                        onPressed: () => context.go('/register'),
-                        child: const Text('Don\'t have an account? Sign Up'),
+                        onPressed: () => context.go('/login'),
+                        child: const Text('Back to Login'),
                       ),
                     ],
                   ),
@@ -163,6 +141,53 @@ class _LoginViewState extends State<_LoginView> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showResetTokenDialog(BuildContext context) {
+    final tokenController = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Enter Reset Token'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Check the backend logs for your reset token and enter it below:',
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: tokenController,
+              decoration: const InputDecoration(
+                labelText: 'Reset Token',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              context.go('/login');
+            },
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final token = tokenController.text.trim();
+              if (token.isNotEmpty) {
+                Navigator.of(dialogContext).pop();
+                context.go('/reset-password?token=$token');
+              }
+            },
+            child: const Text('Continue'),
+          ),
+        ],
       ),
     );
   }
