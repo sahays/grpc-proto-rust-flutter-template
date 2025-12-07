@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_web_app/core/di/injection.dart';
+import 'package:flutter_web_app/core/widgets/gradient_background.dart';
+import 'package:flutter_web_app/core/widgets/animated_button.dart';
+import 'package:flutter_web_app/core/widgets/password_strength_indicator.dart';
 import 'package:flutter_web_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:flutter_web_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:flutter_web_app/features/auth/presentation/bloc/auth_state.dart';
@@ -83,6 +86,8 @@ class _ResetPasswordViewState extends State<_ResetPasswordView> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -102,71 +107,20 @@ class _ResetPasswordViewState extends State<_ResetPasswordView> {
             );
           }
         },
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Card(
-              margin: const EdgeInsets.all(16),
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Form(
-                  key: _formKey,
+        child: GradientBackground(
+          isDark: isDark,
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: GlassmorphicCard(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        'Reset Password',
-                        style: Theme.of(context).textTheme.headlineMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 32),
-                      TextFormField(
-                        controller: _passwordController,
-                        decoration: InputDecoration(
-                          labelText: 'New Password',
-                          prefixIcon: const Icon(Icons.lock),
-                          helperText: _password.errorMessage,
-                          helperMaxLines: 2,
-                        ),
-                        obscureText: true,
-                        onChanged: _onPasswordChanged,
-                        validator: (_) =>
-                            _password.isNotValid ? _password.errorMessage : null,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _confirmPasswordController,
-                        decoration: const InputDecoration(
-                          labelText: 'Confirm Password',
-                          prefixIcon: Icon(Icons.lock_outline),
-                        ),
-                        obscureText: true,
-                        onChanged: _onConfirmPasswordChanged,
-                        validator: _validateConfirmPassword,
-                      ),
-                      const SizedBox(height: 24),
-                      BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, state) {
-                          return FilledButton(
-                            onPressed: state is AuthLoading ? null : _onSubmit,
-                            child: state is AuthLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Text('Reset Password'),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextButton(
-                        onPressed: () => context.go('/login'),
-                        child: const Text('Back to Login'),
-                      ),
+                      _buildHeader(isDark),
+                      const SizedBox(height: 40),
+                      _buildForm(),
                     ],
                   ),
                 ),
@@ -174,6 +128,104 @@ class _ResetPasswordViewState extends State<_ResetPasswordView> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(bool isDark) {
+    return Column(
+      children: [
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF6366F1), Color(0xFF3B82F6)],
+            ),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.lock_open,
+            color: Colors.white,
+            size: 40,
+          ),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'Set New Password',
+          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Your new password must be different from previous passwords',
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Colors.grey.shade600,
+              ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildForm() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextFormField(
+            controller: _passwordController,
+            decoration: const InputDecoration(
+              labelText: 'New Password',
+              hintText: 'Create a strong password',
+              prefixIcon: Icon(Icons.lock_outline),
+            ),
+            obscureText: true,
+            onChanged: _onPasswordChanged,
+            validator: (_) =>
+                _password.isNotValid ? _password.errorMessage : null,
+          ),
+          PasswordStrengthIndicator(password: _passwordController.text),
+          const SizedBox(height: 20),
+          TextFormField(
+            controller: _confirmPasswordController,
+            decoration: const InputDecoration(
+              labelText: 'Confirm Password',
+              hintText: 'Re-enter your password',
+              prefixIcon: Icon(Icons.lock_outline),
+            ),
+            obscureText: true,
+            onChanged: _onConfirmPasswordChanged,
+            validator: _validateConfirmPassword,
+          ),
+          const SizedBox(height: 32),
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              return AnimatedGradientButton(
+                text: 'Reset Password',
+                onPressed: state is AuthLoading ? null : _onSubmit,
+                isLoading: state is AuthLoading,
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.arrow_back, size: 16),
+              TextButton(
+                onPressed: () => context.go('/login'),
+                child: const Text(
+                  'Back to Login',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
