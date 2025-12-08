@@ -53,7 +53,7 @@ The goal is to migrate the existing Go gRPC backend (`backend/`) to Rust (`backe
 - [x] **Story 2.3: Session Repository**
   - Implement `SessionRepository` using Redis.
   - Methods: `store_refresh_token`, `check_rate_limit`, `store_reset_token`, `get_reset_token`.
-- [ ] **Story 2.4: Database Migrations**
+- [x] **Story 2.4: Database Migrations**
   - Verify `sqlx` can use existing SQL migrations or create new ones compatible with the schema.
 
 ### Epic 3: Core Business Logic & Security
@@ -93,9 +93,9 @@ The goal is to migrate the existing Go gRPC backend (`backend/`) to Rust (`backe
   - Write tests for `utils` (hashing, JWT) and independent logic.
 - [ ] **Story 5.2: Integration Testing**
   - Write tests for Repositories using a test DB/Redis container.
-- [ ] **Story 5.3: Middleware & Interceptors**
+- [x] **Story 5.3: Middleware & Interceptors**
   - Add logging middleware (trace ID propagation).
   - Add auth interceptors if needed for future protected endpoints.
-- [ ] **Story 5.4: Dockerization**
+- [x] **Story 5.4: Dockerization**
   - Create a multi-stage `Dockerfile` (build vs runtime).
   - Optimize binary size (strip, release profile).

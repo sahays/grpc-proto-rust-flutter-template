@@ -3,6 +3,7 @@ use sqlx::PgPool;
 use std::sync::Arc;
 use tonic::{Request, Response, Status, transport::Server};
 use tracing::{error, info};
+use tower_http::trace::TraceLayer;
 
 mod cache;
 mod config;
@@ -323,6 +324,13 @@ async fn main() -> Result<(), AppError> {
         .await
         .map_err(AppError::DbError)?;
 
+    info!("Running database migrations...");
+    sqlx::migrate!("../backend/migrations")
+        .run(&pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to run migrations: {}", e)))?;
+    info!("Database migrations applied successfully.");
+
     let pool_arc = Arc::new(pool);
 
     // 4. Initialize Redis Client
@@ -348,6 +356,7 @@ async fn main() -> Result<(), AppError> {
     info!("AuthService server listening on {}", addr);
 
     Server::builder()
+        .layer(TraceLayer::new_for_grpc())
         .add_service(AuthServiceServer::new(auth_service))
         .serve(addr)
         .await?;
