@@ -65,7 +65,7 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: localhost
+                      address: backend-rust
                       port_value: 50051
       health_checks:
         - timeout: 1s

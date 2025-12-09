@@ -41,50 +41,80 @@ services:
       - saas-network
 
   # Go Backend
-  backend:
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: saas-backend
+  #   restart: unless-stopped
+  #   environment:
+  #     # Server Config
+  #     SERVER_PORT: ${SERVER_PORT:-50051}
+  #     SERVER_HOST: ${SERVER_HOST:-0.0.0.0}
+  #
+  #     # Database Config
+  #     DB_HOST: postgres
+  #     DB_PORT: 5432
+  #     DB_USER: ${DB_USER:-postgres}
+  #     DB_PASSWORD: ${DB_PASSWORD:-postgres}
+  #     DB_NAME: ${DB_NAME:-saas_db}
+  #     DB_SSL_MODE: disable
+  #
+  #     # Redis Config
+  #     REDIS_HOST: redis
+  #     REDIS_PORT: 6379
+  #     REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_password}
+  #     REDIS_DB: 0
+  #
+  #     # JWT Config
+  #     JWT_ACCESS_TOKEN_EXPIRY: ${JWT_ACCESS_TOKEN_EXPIRY:-15m}
+  #     JWT_REFRESH_TOKEN_EXPIRY: ${JWT_REFRESH_TOKEN_EXPIRY:-168h}
+  #     JWT_ISSUER: ${JWT_ISSUER:-saas-platform}
+  #
+  #     # Security Config
+  #     ARGON2_MEMORY: ${ARGON2_MEMORY:-65536}
+  #     ARGON2_ITERATIONS: ${ARGON2_ITERATIONS:-3}
+  #     ARGON2_PARALLELISM: ${ARGON2_PARALLELISM:-2}
+  #     ARGON2_SALT_LENGTH: ${ARGON2_SALT_LENGTH:-16}
+  #     ARGON2_KEY_LENGTH: ${ARGON2_KEY_LENGTH:-32}
+  #
+  #     # Rate Limiting
+  #     RATE_LIMIT_PUBLIC: ${RATE_LIMIT_PUBLIC:-5}
+  #     RATE_LIMIT_AUTHENTICATED: ${RATE_LIMIT_AUTHENTICATED:-100}
+  #
+  #     # Environment
+  #     ENVIRONMENT: ${ENVIRONMENT:-development}
+  #     LOG_LEVEL: ${LOG_LEVEL:-debug}
+  #   ports:
+  #     - "50051:50051"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     - saas-network
+  #   healthcheck:
+  #     test: ["CMD", "/app/server", "-health-check"]
+  #     interval: 30s
+  #     timeout: 3s
+  #     retries: 3
+  #     start_period: 10s
+
+  # Rust Backend
+  backend-rust:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: saas-backend
+      context: .
+      dockerfile: backend-rust/Dockerfile
+    container_name: saas-backend-rust
     restart: unless-stopped
     environment:
-      # Server Config
-      SERVER_PORT: ${SERVER_PORT:-50051}
-      SERVER_HOST: ${SERVER_HOST:-0.0.0.0}
-
-      # Database Config
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_NAME: ${DB_NAME:-saas_db}
-      DB_SSL_MODE: disable
-
-      # Redis Config
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_password}
-      REDIS_DB: 0
-
-      # JWT Config
-      JWT_ACCESS_TOKEN_EXPIRY: ${JWT_ACCESS_TOKEN_EXPIRY:-15m}
-      JWT_REFRESH_TOKEN_EXPIRY: ${JWT_REFRESH_TOKEN_EXPIRY:-168h}
-      JWT_ISSUER: ${JWT_ISSUER:-saas-platform}
-
-      # Security Config
-      ARGON2_MEMORY: ${ARGON2_MEMORY:-65536}
-      ARGON2_ITERATIONS: ${ARGON2_ITERATIONS:-3}
-      ARGON2_PARALLELISM: ${ARGON2_PARALLELISM:-2}
-      ARGON2_SALT_LENGTH: ${ARGON2_SALT_LENGTH:-16}
-      ARGON2_KEY_LENGTH: ${ARGON2_KEY_LENGTH:-32}
-
-      # Rate Limiting
-      RATE_LIMIT_PUBLIC: ${RATE_LIMIT_PUBLIC:-5}
-      RATE_LIMIT_AUTHENTICATED: ${RATE_LIMIT_AUTHENTICATED:-100}
-
-      # Environment
-      ENVIRONMENT: ${ENVIRONMENT:-development}
-      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      APP__DATABASE_URL: postgres://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-saas_db}
+      APP__REDIS_URL: redis://:${REDIS_PASSWORD:-redis_password}@redis:6379
+      APP__JWT_SECRET: ${JWT_SECRET:-supersecretkey}
+      APP__SERVER_HOST: 0.0.0.0
+      APP__SERVER_PORT: 50051
+      RUST_LOG: debug
     ports:
       - "50051:50051"
     depends_on:
@@ -94,12 +124,6 @@ services:
         condition: service_healthy
     networks:
       - saas-network
-    healthcheck:
-      test: ["CMD", "/app/server", "-health-check"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
 
   # Envoy Proxy (gRPC-Web Gateway)
   envoy:
@@ -113,7 +137,7 @@ services:
       - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml:ro
     command: /usr/local/bin/envoy -c /etc/envoy/envoy.yaml
     depends_on:
-      - backend
+      - backend-rust
     networks:
       - saas-network
     healthcheck:

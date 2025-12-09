@@ -99,3 +99,14 @@ The goal is to migrate the existing Go gRPC backend (`backend/`) to Rust (`backe
 - [x] **Story 5.4: Dockerization**
   - Create a multi-stage `Dockerfile` (build vs runtime).
   - Optimize binary size (strip, release profile).
+
+### Epic 6: Frontend Integration
+**Goal**: Switch frontend to use the new Rust backend.
+- [x] **Story 6.1: Migrate API Calls**
+  - Update frontend configuration to point to the Rust backend (via Envoy).
+  - Verify all gRPC calls (SignUp, Login, etc.) work against the Rust implementation.
+  - Handle any minor differences in error codes or metadata if strictly necessary (though we aim for parity).
+- [x] **Story 6.2: Complete Frontend Migration**
+  - Ensure all API calls are routed to the Rust backend.
+  - Remove any legacy Go backend configuration from the frontend.
+  - Verify end-to-end functionality (Auth -> Dashboard).

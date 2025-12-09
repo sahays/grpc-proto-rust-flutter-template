@@ -1,12 +1,12 @@
-# gRPC Go Flutter SaaS Template
+# gRPC Rust Flutter SaaS Template
 
-A production-ready SaaS application template using Go (gRPC backend), Flutter Web (frontend), PostgreSQL, Redis, and Envoy Proxy.
+A production-ready SaaS application template using Rust (gRPC backend), Flutter Web (frontend), PostgreSQL, Redis, and Envoy Proxy.
 
 ## Architecture
 
 ```
 ┌─────────────┐      ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
-│   Flutter   │─────▶│    Envoy    │─────▶│ Go Backend  │─────▶│  PostgreSQL │
+│   Flutter   │─────▶│    Envoy    │─────▶│ Rust Backend│─────▶│  PostgreSQL │
 │  Web Client │      │ gRPC-Web    │      │   (gRPC)    │      │             │
 └─────────────┘      └─────────────┘      └─────────────┘      └─────────────┘
                                                   │
@@ -21,17 +21,17 @@ A production-ready SaaS application template using Go (gRPC backend), Flutter We
 ## Tech Stack
 
 ### Backend
-- **Go 1.23+** - Backend language
-- **gRPC** - RPC framework
-- **PostgreSQL 16** - Primary database
-- **Redis 7** - Caching and session storage
+- **Rust 1.75+** - Backend language
+- **Tonic** - gRPC framework
+- **SQLx** - Async PostgreSQL driver with compile-time checks
+- **Redis** - Caching and session storage
 - **Envoy Proxy** - gRPC-Web gateway
 - **Prometheus** - Metrics and monitoring
-- **Zap** - Structured logging
+- **Tracing** - Structured logging
 
 ### Security
-- **JWT (RS256)** - Authentication tokens
-- **Argon2id** - Password hashing
+- **JWT** - Authentication tokens
+- **Argon2** - Password hashing
 - **Rate Limiting** - Token bucket with Redis
 - **Bot Detection** - Request pattern analysis
 
@@ -41,30 +41,20 @@ A production-ready SaaS application template using Go (gRPC backend), Flutter We
 
 ## Prerequisites
 
-- Go 1.23 or later
+- Rust 1.75 or later
 - Docker and Docker Compose
 - Protocol Buffers compiler (`protoc`)
-- Make
 
-### Install protoc and Go plugins
+### Install protoc
 
 **macOS:**
 ```bash
 brew install protobuf
-go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 ```
 
 **Linux:**
 ```bash
 apt install -y protobuf-compiler
-go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-```
-
-Ensure `$GOPATH/bin` is in your PATH:
-```bash
-export PATH="$PATH:$(go env GOPATH)/bin"
 ```
 
 ## Quick Start
@@ -73,17 +63,11 @@ export PATH="$PATH:$(go env GOPATH)/bin"
 
 ```bash
 git clone https://github.com/sahays/grpc-proto-go-flutter-template.git
-cd grpc-proto-go-flutter-template/backend
-cp .env.example .env
+cd grpc-proto-go-flutter-template/backend-rust
+# Ensure .env exists (create if needed, usually not required for default dev config if handled in code, but good practice)
 ```
 
-### 2. Generate Proto Files
-
-```bash
-make proto
-```
-
-### 3. Start Services with Docker Compose
+### 2. Start Services with Docker Compose
 
 ```bash
 docker-compose up -d
@@ -92,29 +76,22 @@ docker-compose up -d
 This starts:
 - **PostgreSQL** on port 5432
 - **Redis** on port 6379
-- **Go Backend** on port 50051
+- **Rust Backend** on port 50051
 - **Envoy Proxy** on port 8080
 - **Prometheus** on port 9090 (optional)
 - **Grafana** on port 3000 (optional)
 
-### 4. Check Service Health
+### 3. Check Service Health
 
 ```bash
 # Check all services
 docker-compose ps
 
 # View backend logs
-docker-compose logs -f backend
+docker-compose logs -f backend-rust
 
 # Check Envoy admin
 curl http://localhost:9901/ready
-```
-
-### 5. Run Migrations
-
-```bash
-cd backend
-make migrate-up
 ```
 
 ## Development
@@ -126,11 +103,10 @@ For complete instructions on running the backend locally without Docker, see **[
 **Quick version:**
 
 1. Install PostgreSQL and Redis locally (or use Docker for just the databases)
-2. Generate proto files and run:
+2. Run the backend:
 ```bash
-cd backend
-make proto
-make run
+cd backend-rust
+cargo run
 ```
 
 **Hybrid approach** (backend local, databases in Docker):
@@ -139,90 +115,57 @@ make run
 docker-compose up -d postgres redis
 
 # Run backend locally
-cd backend
-make run
+cd backend-rust
+cargo run
 ```
 
 ### Hot Reload Development
 
-Install Air for hot reload:
+Install `cargo-watch` for hot reload:
 ```bash
-make install-tools
+cargo install cargo-watch
 ```
 
 Run with hot reload:
 ```bash
-make dev
-```
-
-### Available Make Commands
-
-```bash
-make help              # Show all available commands
-make proto             # Generate Go code from proto files
-make build             # Build the application
-make run               # Run the application
-make test              # Run tests
-make test-coverage     # Run tests with coverage
-make lint              # Run linter
-make clean             # Clean build artifacts
-make docker-build      # Build Docker image
-make docker-up         # Start docker-compose services
-make docker-down       # Stop docker-compose services
-make migrate-up        # Run database migrations
-make migrate-down      # Rollback database migrations
-make migrate-create    # Create new migration
-make dev               # Run with hot reload
-make install-tools     # Install dev tools
+cargo watch -x run
 ```
 
 ## Configuration
 
-All configuration is done via environment variables. See `backend/.env.example` for all available options.
+Configuration is managed via the `config` crate and environment variables.
 
 ### Key Configuration Options
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `SERVER_PORT` | 50051 | gRPC server port |
-| `DB_HOST` | localhost | PostgreSQL host |
-| `DB_NAME` | saas_db | Database name |
-| `REDIS_HOST` | localhost | Redis host |
-| `JWT_ACCESS_TOKEN_EXPIRY` | 15m | Access token lifetime |
-| `JWT_REFRESH_TOKEN_EXPIRY` | 168h | Refresh token lifetime (7 days) |
-| `RATE_LIMIT_PUBLIC` | 5 | Public endpoint rate limit (per minute) |
-| `RATE_LIMIT_AUTHENTICATED` | 100 | Authenticated endpoint rate limit |
-| `LOG_LEVEL` | debug | Logging level |
-| `ENVIRONMENT` | development | Environment (development/production) |
+| `DB_URL` | postgres://... | PostgreSQL connection URL |
+| `REDIS_URL` | redis://... | Redis connection URL |
+| `JWT_SECRET` | ... | Secret for signing tokens |
+| `RUST_LOG` | info | Logging level |
 
 ## Project Structure
 
 ```
 .
-├── backend/
-│   ├── cmd/server/          # Application entry point
-│   ├── internal/
-│   │   ├── auth/           # Authentication service
-│   │   ├── config/         # Configuration management
-│   │   ├── db/             # Database layer
-│   │   ├── cache/          # Redis cache
-│   │   ├── middleware/     # gRPC interceptors
-│   │   ├── security/       # Security utilities
-│   │   └── models/         # Domain models
-│   ├── pkg/
-│   │   ├── jwt/            # JWT utilities
-│   │   ├── logger/         # Logging setup
-│   │   ├── metrics/        # Prometheus metrics
-│   │   └── validator/      # Input validation
-│   ├── migrations/         # Database migrations
-│   ├── proto/              # Generated proto code
-│   ├── Dockerfile
-│   ├── Makefile
-│   └── .env.example
-├── proto/                  # Proto definitions
+├── backend-rust/
+│   ├── src/
+│   │   ├── main.rs         # Application entry point
+│   │   ├── config.rs       # Configuration
+│   │   ├── db.rs           # Database connection
+│   │   ├── cache.rs        # Redis connection
+│   │   ├── models/         # Domain models & DB structs
+│   │   ├── repositories/   # Data access layer
+│   │   ├── utils/          # Utilities (JWT, Password)
+│   │   └── error.rs        # Error handling
+│   ├── proto/              # Proto definitions (symlinked or copied)
+│   ├── Cargo.toml
+│   └── Dockerfile
+├── proto/                  # Shared Proto definitions
 ├── envoy/                  # Envoy configuration
 ├── prometheus/             # Prometheus configuration
-├── frontend/               # Flutter web app (TBD)
+├── frontend/               # Flutter web app
 └── docker-compose.yaml
 ```
 
@@ -281,7 +224,6 @@ Access Prometheus at http://localhost:9090
 Key metrics:
 - `grpc_server_handled_total` - Total RPC requests
 - `grpc_server_handling_seconds` - Request duration
-- `go_goroutines` - Active goroutines
 - `db_connections_open` - Database connections
 - `redis_operations_total` - Redis operations
 
@@ -291,7 +233,6 @@ Access Grafana at http://localhost:3000 (admin/admin)
 
 Import pre-built dashboards for:
 - gRPC server metrics
-- Go runtime metrics
 - PostgreSQL metrics
 - Redis metrics
 
@@ -304,17 +245,12 @@ Import pre-built dashboards for:
 
 ### Run All Tests
 ```bash
-make test
+cargo test
 ```
 
-### Run Tests with Coverage
+### Run Specific Tests
 ```bash
-make test-coverage
-```
-
-### Run Specific Package Tests
-```bash
-go test -v ./internal/auth/...
+cargo test --package backend-rust --bin backend-rust -- tests::test_name
 ```
 
 ## Deployment
@@ -323,12 +259,12 @@ go test -v ./internal/auth/...
 
 Build the image:
 ```bash
-make docker-build
+docker build -t grpc-rust-backend:latest ./backend-rust
 ```
 
 Run with Docker:
 ```bash
-docker run -p 50051:50051 --env-file .env grpc-go-backend:latest
+docker run -p 50051:50051 --env-file .env grpc-rust-backend:latest
 ```
 
 ### Kubernetes
