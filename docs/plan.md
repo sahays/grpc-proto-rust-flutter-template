@@ -89,9 +89,9 @@
 **Goal:** A fully responsive, modern admin dashboard for a sports academy.
 
 - [x] **Task 5.1:** Core Dashboard Infrastructure (Sidebar, AppBar, Layout).
-- [ ] **Task 5.2:** Mock Data Layer & Models.
-- [ ] **Task 5.3:** Dashboard Pages (Overview, Students, Coaches, Classes).
-- [ ] **Task 5.4:** UI Components Library (Charts, Tables, Cards).
+- [x] **Task 5.2:** Mock Data Layer & Models.
+- [x] **Task 5.3:** Dashboard Pages (Overview, Students, Coaches, Classes).
+- [x] **Task 5.4:** UI Components Library (Charts, Tables, Cards).
 
 ### Epic 6: Production Security & Reliability
 
